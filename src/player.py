@@ -15,7 +15,7 @@ class Player:
         self.x = x
         self.y = y
         self.color = color
-        self.direction = (1, 0)
+        self.direction = [1, 0]
         self.trail = []
 
 

@@ -1,6 +1,6 @@
 import pygame
 
-class Gameboard:
+class GameBoard:
     def __init__(self, width, height):
         ''' 
         Initialize the game window.
@@ -15,11 +15,8 @@ class Gameboard:
         self.height = height
         
 
-        gridCells = [[0 for w in range(height)] for h in range(width)]
-        gridCells[0][1] = 1
-
+        gridCells = [[0 for w in range(width)] for h in range(height)]
         self.gridCells = gridCells
-        print (gridCells)
     
     def draw(self, screen):
         """
@@ -45,6 +42,7 @@ class Gameboard:
                     # Green Rectangle - Empty Cells
                     pygame.draw.rect(screen, (0, 255, 0), (c * rect_width, r * rect_height, rect_width, rect_height))
 
+
     def is_collision(self, x, y):
         """
         Check if the given coordinates collide with the board boundaries or a trail.
@@ -56,8 +54,8 @@ class Gameboard:
         # Check if x and y are within board boundaries
         # Also check if the cell at (x, y) is not empty (i.e., has a trail)
 
-        if (x < 0 or x > self.width or y < 0 or y > self.height):
-            return False
+        if (x < 0 or x >= self.width or y < 0 or y >= self.height):
+            return True
 
         # True if cell is a Player Trail (collision)
         return (self.gridCells[y][x] == 1)
