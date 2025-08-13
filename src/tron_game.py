@@ -113,7 +113,7 @@ def draw_game(screen, game_board, player):
 
     screen.fill((0, 0, 0))
     game_board.draw(screen)
-    player.draw(screen)
+    player.draw(screen, game_board.width, game_board.height)
 
     pygame.display.flip()
 
@@ -137,7 +137,7 @@ def main():
     
 
     clock = pygame.time.Clock()
-
+    
     running = True
     while (running):
         
@@ -148,6 +148,7 @@ def main():
             running = False
 
         draw_game(screen, game_board, player)
+       
 
         clock.tick(10)
 

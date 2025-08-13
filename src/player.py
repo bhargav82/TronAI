@@ -51,16 +51,14 @@ class Player:
         return True
 
 
-    def draw(self, screen):
+    def draw(self, screen, cell_width, cell_height):
         """
         Draw the player and their trail on the screen.
         Parameter:
             screen: Pygame screen object to draw on
         """
         # Draw the player's current position and their entire trail
+        # Player is drawn in GameBoard
         
-        for trail_x, trail_y in self.trail:
-            pygame.draw.rect(screen, self.color, (trail_x * 50, trail_y * 50, 50, 50))
+        pass
 
-
-        pygame.draw.rect(screen, self.color, (self.x, self.y, 50, 50))
