@@ -35,12 +35,18 @@ class GameBoard:
 
         for r in range(self.height):
             for c in  range(self.width):
-                if (self.gridCells[r][c] == 1):
-                    # Red Rectangle - Player Trail
-                    pygame.draw.rect(screen, (255, 0, 0), (c * rect_width, r * rect_height, rect_width, rect_height))
-                else:
-                    # Green Rectangle - Empty Cells
+                if (self.gridCells[r][c] == 0):
+                    # Green Rectangles -> Empty Cells
                     pygame.draw.rect(screen, (0, 255, 0), (c * rect_width, r * rect_height, rect_width, rect_height))
+
+                if (self.gridCells[r][c] == 1):
+                    # Red Rectangles -> Player 1
+                    pygame.draw.rect(screen, (255, 0, 0), (c * rect_width, r * rect_height, rect_width, rect_height))
+
+                if (self.gridCells[r][c] == 2):
+                    # Blue Rectangles -> Player 2
+                    pygame.draw.rect(screen, (0, 0, 255), (c * rect_width, r * rect_height, rect_width, rect_height))
+                
 
 
     def is_collision(self, x, y):
@@ -57,8 +63,8 @@ class GameBoard:
         if (x < 0 or x >= self.width or y < 0 or y >= self.height):
             return True
 
-        # True if cell is a Player Trail (collision)
-        return (self.gridCells[y][x] == 1)
+        # True if cell is either Player Trail (collision)
+        return (self.gridCells[y][x] != 0)
 
 
 

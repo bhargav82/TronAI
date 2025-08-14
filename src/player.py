@@ -1,7 +1,7 @@
 import pygame
 
 class Player:
-    def __init__(self, x, y, color):
+    def __init__(self, x, y, color, player_id, direction):
         """
         Initialize the player.
         Parameters:
@@ -15,8 +15,11 @@ class Player:
         self.x = x
         self.y = y
         self.color = color
-        self.direction = [1, 0]
+        self.direction = direction
+        self.player_id = player_id
         self.trail = []
+
+        self.trail.append([self.x, self.y])
 
 
     def move(self):
@@ -26,6 +29,7 @@ class Player:
         # Update the player's position based on their direction
         # Add the new position to the trail
         
+
         self.x += self.direction[0]
         self.y += self.direction[1]
 
@@ -58,7 +62,15 @@ class Player:
             screen: Pygame screen object to draw on
         """
         # Draw the player's current position and their entire trail
-        # Player is drawn in GameBoard
+        # Empty cells are green in Gameboard
+        # Player 1 -> Red Cells
+        # Player 2 -> Blue Cells
+
+         
+        for trail_x, trail_y in self.trail:
+            pygame.draw.rect(screen, self.color, (trail_x * cell_width, trail_y * cell_height, cell_width, cell_height))
         
-        pass
+       
+
+       
 

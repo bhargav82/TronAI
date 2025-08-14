@@ -24,7 +24,7 @@ def initialize_game():
 
 
 
-def handle_events(player):
+def handle_events(players):
     """
     Handle Pygame events, including player input.
     Parameters:
@@ -40,26 +40,45 @@ def handle_events(player):
         if event.type == pygame.QUIT:
             return False
         
-
+        player1 = players[0]
+        player2 = players[1]
         # Move the player based on key presses
        
         if event.type == pygame.KEYDOWN:
             
             if event.key == pygame.K_LEFT:
                 new_direction = (-1, 0)
-                player.change_direction(new_direction)
+                player1.change_direction(new_direction)
 
             elif event.key == pygame.K_RIGHT:
                 new_direction = (1, 0)
-                player.change_direction(new_direction)
+                player1.change_direction(new_direction)
 
             elif event.key == pygame.K_UP:
                 new_direction = (0, -1)
-                player.change_direction(new_direction)
+                player1.change_direction(new_direction)
 
             elif event.key == pygame.K_DOWN:
                 new_direction = (0, 1)
-                player.change_direction(new_direction)
+                player1.change_direction(new_direction)
+
+
+
+            if event.key == pygame.K_a:
+                new_direction = (-1, 0)
+                player2.change_direction(new_direction)
+
+            elif event.key == pygame.K_d:
+                new_direction = (1, 0)
+                player2.change_direction(new_direction)
+
+            elif event.key == pygame.K_w:
+                new_direction = (0, -1)
+                player2.change_direction(new_direction)
+
+            elif event.key == pygame.K_s:
+                new_direction = (0, 1)
+                player2.change_direction(new_direction)
 
     return True
     
@@ -86,12 +105,12 @@ def update_game_state(player, game_board):
     if game_board and game_board.is_collision(next_x, next_y):
         return False  
     
-    # If no collision, move the player
+    
     player.move()
     
     # Update game_board with new player position (mark as trail)
     if game_board:
-        game_board.gridCells[player.y][player.x] = 1
+        game_board.gridCells[player.y][player.x] = player.player_id
 
     
     return True
@@ -112,8 +131,8 @@ def draw_game(screen, game_board, player):
     # Update the display
 
     screen.fill((0, 0, 0))
+
     game_board.draw(screen)
-    player.draw(screen, game_board.width, game_board.height)
 
     pygame.display.flip()
 
@@ -132,22 +151,26 @@ def main():
     #   - Control game speed
 
     screen = initialize_game()
-    player = Player(10, 10, (50, 50, 50))
+    player1 = Player(10, 10, (255, 0, 0), 1, [1, 0])
+    player2 = Player(40, 40, (0, 0, 255), 2, [-1, 0])
     game_board = GameBoard(50, 50)
     
+    players = [player1, player2]
 
     clock = pygame.time.Clock()
     
     running = True
     while (running):
         
-        if not handle_events(player):
+        
+        if not handle_events(players):
             running = False
     
-        if not update_game_state(player, game_board):
-            running = False
+        for player in players:
+            if not update_game_state(player, game_board):
+                running = False
 
-        draw_game(screen, game_board, player)
+        draw_game(screen, game_board, players)
        
 
         clock.tick(10)
