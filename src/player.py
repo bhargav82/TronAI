@@ -1,7 +1,7 @@
 import pygame
 
 class Player:
-    def __init__(self, x, y, color, player_id, direction):
+    def __init__(self, x, y, color, player_id, direction, score):
         """
         Initialize the player.
         Parameters:
@@ -18,7 +18,7 @@ class Player:
         self.direction = direction
         self.player_id = player_id
         self.trail = []
-
+        self.score = score
         self.trail.append([self.x, self.y])
 
 
