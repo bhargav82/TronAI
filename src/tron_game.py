@@ -1,7 +1,8 @@
 import pygame
 from game_board import GameBoard
 from player import Player
-
+from mockAI import MockAI
+from rl_ai import RLAgent
 
 # Game Display Setup
 def initialize_game():
@@ -18,17 +19,15 @@ def initialize_game():
     
     WIDTH, HEIGHT = 1200, 800
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
-
     pygame.display.set_caption("Tron Game")
     screen.fill((0, 0, 0))
-    
     pygame.display.flip()
 
     return screen
 
 
 
-def handle_events(players):
+def handle_events() -> bool:
     """
     Handle Pygame events, including player input.
     Parameters:
@@ -44,51 +43,11 @@ def handle_events(players):
         if event.type == pygame.QUIT:
             return False
         
-        player1 = players[0]
-        player2 = players[1]
-        # Move the player based on key presses
-       
-        if event.type == pygame.KEYDOWN:
-            
-            if event.key == pygame.K_LEFT:
-                new_direction = (-1, 0)
-                player1.change_direction(new_direction)
-
-            elif event.key == pygame.K_RIGHT:
-                new_direction = (1, 0)
-                player1.change_direction(new_direction)
-
-            elif event.key == pygame.K_UP:
-                new_direction = (0, -1)
-                player1.change_direction(new_direction)
-
-            elif event.key == pygame.K_DOWN:
-                new_direction = (0, 1)
-                player1.change_direction(new_direction)
-
-
-
-            if event.key == pygame.K_a:
-                new_direction = (-1, 0)
-                player2.change_direction(new_direction)
-
-            elif event.key == pygame.K_d:
-                new_direction = (1, 0)
-                player2.change_direction(new_direction)
-
-            elif event.key == pygame.K_w:
-                new_direction = (0, -1)
-                player2.change_direction(new_direction)
-
-            elif event.key == pygame.K_s:
-                new_direction = (0, 1)
-                player2.change_direction(new_direction)
-
     return True
     
 
 
-def update_game_state(player, game_board):
+def update_game_state(player1: Player, player2: Player, game_board: GameBoard) -> int:
     """
     Update the game state, including player movement and collision detection.
     Parameters:
@@ -101,40 +60,58 @@ def update_game_state(player, game_board):
     # Update game_board with new player position
     
 
-    next_x = player.x + player.direction[0]
-    next_y = player.y + player.direction[1]
+
+    next_x1 = player1.x + player1.direction[0]
+    next_y1 = player1.y + player1.direction[1]
+
+    next_x2 = player2.x + player2.direction[0]
+    next_y2= player2.y + player2.direction[1]
+
+    collision1 = game_board.is_collision(next_x1, next_y1)
+    collision2 = game_board.is_collision(next_x2, next_y2)
+
+    head_on_collision = (next_x1, next_x2) == (next_y1, next_y2)
+
+
+    if head_on_collision:
+        return 3
+    elif collision1 and collision2:
+        return 3
+    elif collision1:
+        return 2                        # Player2 Wins
+    elif collision2:
+        return 1                        # Player1 Wins
     
 
-    # Game over due to collision
-    if game_board and game_board.is_collision(next_x, next_y):
-        return False  
-    
-    # No collision, then player can move
-    player.move()
+    # No collision, then players can move
+    player1.move(game_board)
+    player2.move(game_board)
     
     # Update gameboard with new player position (mark as trail)
-    if game_board:
-        game_board.gridCells[player.y][player.x] = player.player_id
+    
+    game_board.gridCells[player1.y][player1.x] = player1.player_id
+    game_board.gridCells[player2.y][player2.x] = player2.player_id
+
 
     
-    return True
+    return 0
 
 
-def draw_score(screen, game_board, players):
+def draw_score(screen, players):
 
     font = pygame.font.SysFont('Arial', 30)
     screen.fill((0, 0, 0))
 
     screen_width, screen_height = screen.get_size()
-    rect_width = screen_width // game_board.width
-    rect_height = screen_height // game_board.height
 
-    for player in players:
+
+    for i, player in enumerate(players):
         score_surface = font.render(f"Player {player.player_id} Score: {player.score}", True, (255, 255, 255))
-        score_rect = score_surface.get_rect(center = (player.x * 1.3 * rect_width, screen_height // 2))
+        score_rect = score_surface.get_rect(center = (screen_width * 0.33 * (i + 1), screen_height // 2))
         screen.blit(score_surface, score_rect)
 
-    
+    text_surface = font.render("Press Enter to Play Again!", True, (255, 255, 255))
+    screen.blit(text_surface, (screen_width // 2.6, screen_height // 1.2))
     pygame.display.flip()
 
 
@@ -152,11 +129,7 @@ def draw_game(screen, game_board):
     # Update the display
 
     screen.fill((0, 0, 0))
-
-    
     game_board.draw(screen)
-    
-
     pygame.display.flip()
 
 
@@ -175,35 +148,65 @@ def main():
 
 
     screen = initialize_game()
-    player1 = Player(10, 10, (255, 0, 0), 1, [1, 0], 0)
-    player2 = Player(40, 40, (0, 0, 255), 2, [-1, 0], 0)
-    game_board = GameBoard(50, 50)
-    
-    players = [player1, player2]
-
     clock = pygame.time.Clock()
-    
     running = True
-    game_over = False
+    player1score = 0
+    player2score = 0
+
     while (running):
+
+        # New Game Initalization
+        ai1 = RLAgent(state_size=49, action_size=4, model_file="tron_survival_model.pth")
+        ai2 = RLAgent(state_size=49, action_size=4, model_file="tron_survival_model.pth")
+
+        player1 = Player(10, 10, (255, 0, 0), 1, [1, 0], player1score, ai1)
+        player2 = Player(40, 40, (0, 0, 255), 2, [-1, 0], player2score, ai2)
+        game_board = GameBoard(50, 50)
+        
+        players = [player1, player2]
+        
+        game_over = False
         
         while not game_over:
-            if not handle_events(players):
+            # Game Loop
+            if not handle_events():
+                running = False
+                break
+
+            result = update_game_state(player1, player2, game_board)
+            if result != 0:
+                if result == 1:
+                    player1score += 1
+                    player1.score = player1score
+                elif result == 2:
+                    player2score += 1
+                    player2.score = player2score
+
                 game_over = True
+
+            else:
+                draw_game(screen, game_board)
+                clock.tick(10)
+
+        if not running:
+            break
         
-            for player in players:
-                if not update_game_state(player, game_board):
-                    game_over = True
 
-            draw_game(screen, game_board)
-            
-            clock.tick(10)
+        draw_score(screen, players)
 
-        
-        draw_score(screen, game_board, players)
-
-        pygame.time.wait(2000)
-        running = False
+        waiting_for_enter = True
+        while waiting_for_enter:
+            for event in pygame.event.get():
+                if event.type == pygame.quit:
+                    running = False
+                
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_RETURN or event.key == pygame.K_KP_ENTER:
+                        waiting_for_enter = False
+                    elif event.key == pygame.K_q:
+                        running = False
+                        waiting_for_enter = False
+  
    
     pygame.quit()
 
